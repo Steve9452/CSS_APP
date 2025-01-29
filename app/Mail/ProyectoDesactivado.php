@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
 
 class ProyectoDesactivado extends Mailable
 {
@@ -29,6 +30,6 @@ class ProyectoDesactivado extends Mailable
      */
     public function build()
     {
-        return $this->from("automatic.noreply.css@gmail.com","Centro de servicio social")->subject("Actualización de proyecto de horas sociales")->bcc($this->details['mails'])->view('emails.proyectoDesactivado');
+        return $this->from("automatic.noreply.css@gmail.com","Centro de servicio social")->subject("Actualización de proyecto de horas sociales")->view('emails.proyectoDesactivado');
     }
 }

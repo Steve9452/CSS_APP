@@ -36,10 +36,10 @@ class SendProyectoDesactivadoMail implements ShouldQueue
      */
     public function handle()
     {
+        // echo "Sending BCC email" +"\n";
         echo "Enviando email a: " . $this->emailDetails['email'] . "\n";
         $cacheKey = "email_quota_daily_limit";
         $quotaLimit = env('EMAIL_QUOTA_LIMIT',100);
-
     
         Log::info('Sending email to: ' . $this->emailDetails['email']);
     
@@ -49,7 +49,7 @@ class SendProyectoDesactivadoMail implements ShouldQueue
     
             if ($emailCount < $quotaLimit) {
                 Log::info('Sending email now.');
-                Mail::bcc($this->emailDetails['mails'])->send(new ProyectoDesactivado($this->emailDetails));
+                Mail::to($this->emailDetails['email'])->send(new ProyectoDesactivado($this->emailDetails));
                 Cache::put($cacheKey, $emailCount + 1, Carbon::now()->endOfDay());
                 
                 
@@ -65,7 +65,7 @@ class SendProyectoDesactivadoMail implements ShouldQueue
             }
         } else {
             Log::info('Cache key does not exist. Sending first email and initializing quota.');
-            Mail::bcc($this->emailDetails['mails'])->send(new ProyectoDesactivado($this->emailDetails));
+            Mail::to($this->emailDetails['email'])->send(new ProyectoDesactivado($this->emailDetails));
             Cache::put($cacheKey, 1, Carbon::now()->addDay());
             Log::info('Email sent and quota initialized. New email count: 1');
         }

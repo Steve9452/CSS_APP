@@ -12,6 +12,7 @@ use App\ProyectoxEstudiante;
 use Mail;
 use App\Jobs\SendReunionMail;
 use App\Jobs\SendProyectoDesactivadoMail;
+use Illuminate\Support\Facades\Log;
 
 class ProyectoController extends Controller
 {
@@ -389,6 +390,25 @@ public function state(Request $request)
                     $proyectoXEstudiante[$i]->delete();
                 }
             }
+
+
+            $students = User::join('proyectoxestudiante', 'users.idUser', '=', 'proyectoxestudiante.idUser')
+            ->join('proyecto', 'proyectoxestudiante.idProyecto', '=', 'proyecto.idProyecto')
+            ->select('users.correo')
+            ->where('proyectoxestudiante.idProyecto', '=', $request->idProyecto)->get();
+
+
+            // Correos de los estudiantes en proyecto cancelado
+            foreach ($students as $student) {
+                $emailDetails = [
+                    'proyecto' => $proyecto,
+                    'email' => $student->correo
+                ];
+                
+                SendProyectoDesactivadoMail::dispatch($emailDetails)->onConnection('database');
+            }
+            
+           
         });
 
 
