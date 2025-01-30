@@ -12,6 +12,7 @@ use App\ProyectoxEstudiante;
 use Mail;
 use App\Jobs\SendReunionMail;
 use App\Jobs\SendProyectoDesactivadoMail;
+use App\Jobs\SendProyectoFinalizadoMail;
 use Illuminate\Support\Facades\Log;
 
 class ProyectoController extends Controller
@@ -355,6 +356,22 @@ public function state(Request $request)
                 }else if($proyectoXEstudiante[$i]->estado == 0){
                     $proyectoXEstudiante[$i]->delete();
                 }
+            }
+
+            $students = User::join('proyectoxestudiante', 'users.idUser', '=', 'proyectoxestudiante.idUser')
+            ->join('proyecto', 'proyectoxestudiante.idProyecto', '=', 'proyecto.idProyecto')
+            ->select('users.correo')
+            ->where('proyectoxestudiante.idProyecto', '=', $request->idProyecto)->get();
+
+
+            // Correos de los estudiantes en proyecto cancelado
+            foreach ($students as $student) {
+                $emailDetails = [
+                    'proyecto' => $proyecto,
+                    'email' => $student->correo
+                ];
+                
+                SendProyectoFinalizadoMail::dispatch($emailDetails)->onConnection('database');
             }
         });
         } catch (\Throwable $th) {
